@@ -1,7 +1,7 @@
 # hd
 Hex Dump. Shows portions of files in various forms. Windows command line app.
 
-To build, use yoru favorite version of .net:
+To build, use your favorite version of .net:
 
     c:\windows\microsoft.net\framework64\v4.0.30319\csc.exe /debug+ /checked- /nologo /o+ /nowarn:0168 hd.cs
 
