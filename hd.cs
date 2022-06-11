@@ -17,14 +17,14 @@ class HexDump
         Console.WriteLine( "Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-o:offset] [-n:bytes] [-c] file" );
         Console.WriteLine( "  Hex Dump" );
         Console.WriteLine( "  arguments: file  The file to display" );
-        Console.WriteLine( "             -a    Specify d for decimal or x for hex display of address/offset" );
+        Console.WriteLine( "             -a    Specify d for decimal or x for hex display of address/offset. Default Hex" );
         Console.WriteLine( "             -b    Show data in Big Endian. Default is Little Endian" );
-        Console.WriteLine( "             -c    Don't display ascii characters on the right" );
+        Console.WriteLine( "             -c    Don't display ascii characters on the right. Default is to display it." );
         Console.WriteLine( "             -d    Ignore all other formatting args and write unformatted hex bytes" );
         Console.WriteLine( "             -e    Indicates -o is from the End of the file, not the start" );
-        Console.WriteLine( "             -f    Format of data: width (Byte, Word, Dword, Qword) and radix (Decimal, Hex)" );
+        Console.WriteLine( "             -f    Format of data: width (Byte, Word, Dword, Qword) and radix (Decimal, heX). Default bx" );
         Console.WriteLine( "             -n    Count of bytes to display (decimal or hex). 0 for whole file. Default is 0x100" );
-        Console.WriteLine( "             -o    Starting Offset in bytes (decimal or hex)" );
+        Console.WriteLine( "             -o    Starting Offset in bytes (decimal or hex). Default is 0" );
         Console.WriteLine( "  defaults:  -a:x -f:bx -o:0 -n:0x100" );
         Console.WriteLine( "  examples:  hd in.txt" );
         Console.WriteLine( "             hd -a:d -f:qx -o:32 -n:64 -c in.dll       dumps the first 64 bytes" );
