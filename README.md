@@ -27,3 +27,22 @@ Usage:
                  hd -f:bd -o:0x40 -n:0 -c foo.exe          dumps the whole file
 
 The app is perhaps overly optimized, because sometimes you need to dump a massive file to look for patterns.
+
+Sample usages:
+
+    C:\>hd otobokebeaver.jpg /n:0x40 /f:dx
+    0000000000000000  e0ffd8ff 464a1000 01004649 78000101 .O.à..JFIF.....x
+    0000000000000010  00007800 2200e1ff 66697845 4d4d0000 .x...á."Exif..MM
+    0000000000000020  00002a00 01000800 03001201 01000000 .*..............
+    0000000000000030  00000100 00000000 4300dbff 01010200 .........U.C....
+    
+    
+    C:\>hd otobokebeaver.jpg /n:0x40 /e
+    000000000006d76b  00 a2 8a 28 00 a2 8a 28 00 a2 8a 28 00 a2 8a 28 .¢?(.¢?(.¢?(.¢?(
+    000000000006d77b  00 a2 8a 28 00 a2 8a 28 00 a2 8a 28 00 a2 8a 28 .¢?(.¢?(.¢?(.¢?(
+    000000000006d78b  00 a2 8a 28 00 a2 8a 28 00 a2 8a 28 00 a2 8a 28 .¢?(.¢?(.¢?(.¢?(
+    000000000006d79b  00 a2 8a 28 00 a2 8a 2b 9c 02 8a 28 a0 d0 ff d9 .¢?(.¢?+?.?( D.U
+    
+    C:\>hd otobokebeaver.jpg /n:0x20 /d
+    ffd8ffe000104a46494600010101007800780000ffe100224578696600004d4d
+    
