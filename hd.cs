@@ -14,7 +14,7 @@ class HexDump
 {
     static void Usage()
     {
-        Console.WriteLine( "Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-o:offset] [-n:bytes] [-c] file" );
+        Console.WriteLine( "Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-i] [-o:offset] [-n:bytes] [-c] file" );
         Console.WriteLine( "  Hex Dump" );
         Console.WriteLine( "  arguments: file  The file to display" );
         Console.WriteLine( "             -a    Specify d for decimal or x for hex display of address/offset. Default Hex" );
@@ -23,8 +23,10 @@ class HexDump
         Console.WriteLine( "             -d    Ignore all other formatting args and write unformatted hex bytes" );
         Console.WriteLine( "             -e    Indicates -o is from the End of the file, not the start" );
         Console.WriteLine( "             -f    Format of data: width (Byte, Word, Dword, Qword) and radix (Decimal, heX). Default bx" );
+        Console.WriteLine( "             -i    Ignore other formatting and wrte a C++ initialized byte array" );
         Console.WriteLine( "             -n    Count of bytes to display (decimal or hex). 0 for whole file. Default is 0x100" );
         Console.WriteLine( "             -o    Starting Offset in bytes (decimal or hex). Default is 0" );
+        Console.WriteLine( "             -q    Ignore other formatting and wrte a C++ initialized quadword (8-byte) array" );
         Console.WriteLine( "  defaults:  -a:x -f:bx -o:0 -n:0x100" );
         Console.WriteLine( "  examples:  hd in.txt" );
         Console.WriteLine( "             hd -a:d -f:qx -o:32 -n:64 -c in.dll       dumps the first 64 bytes" );
@@ -53,6 +55,14 @@ class HexDump
         public byte ReadByte()
         {
             return data[ offset++ ];
+        }
+
+        public ulong ReadQWord()
+        {
+            ulong x = 0;
+            for ( int i = 0; i < 8; i++ )
+                x |= ( ( (ulong) data[ offset++ ] ) << ( 8 * i ) );
+            return x;
         }
 
         public void Rewind()
@@ -150,6 +160,8 @@ class HexDump
         bool bigEndian = false;
         bool hexDump = false;
         bool offsetFromEnd = false;
+        bool cppArray = false;
+        bool cppArrayQWord = false;
 
         for ( int i = 0; i < args.Length; i++ )
         {
@@ -159,7 +171,7 @@ class HexDump
                 string arg = args[i];
                 char c = argUpper[1];
     
-                if ( 'A' != c && 'B' != c && 'C' != c && 'D' != c && 'E' != c && 'F' != c && 'N' != c && 'O' != c )
+                if ( 'A' != c && 'B' != c && 'C' != c && 'D' != c && 'E' != c && 'F' != c && 'I' != c && 'N' != c && 'O' != c && 'Q' != c )
                     Usage();
     
                 if ( 'A' == c )
@@ -210,6 +222,8 @@ class HexDump
                     else
                         Usage();
                 }
+                else if ( 'I' == c )
+                    cppArray = true;
                 else if ( 'N' == c )
                 {
                     if ( arg.Length == 2 )
@@ -240,6 +254,8 @@ class HexDump
                     else
                         startingOffset = Convert.ToInt64( arg.Substring( 3 ) );
                 }
+                else if ( 'Q' == c )
+                    cppArrayQWord = true;
             }
             else
             {
@@ -293,6 +309,38 @@ class HexDump
                     buf.Read( fs, len );
 
                     long cap = Math.Min( offset + 16, displayedBytes );
+
+                    if ( cppArray )
+                    {
+                        for ( long o = offset; o < cap; o++ )
+                        {
+                            if ( 0 == ( o % 16 ) )
+                                sb.Append( "\n" );
+                            sb.Append( "0x" );
+                            AppendHexByte( sb, buf.ReadByte() );
+                            sb.Append( ", " );
+                        }
+                        continue;
+                    }
+                    else if ( cppArrayQWord )
+                    {
+                        if ( ( 0 != offset ) && 0 == ( offset % 32 ) )
+                            sb.Append( "\n" );
+
+                        ulong q = buf.ReadQWord();
+                        sb.Append( "0x" );
+                        AppendHexQWord( sb, q );
+                        sb.Append( ", " );
+
+                        if ( cap > offset + 8 )
+                        {
+                            q = buf.ReadQWord();
+                            sb.Append( "0x" );
+                            AppendHexQWord( sb, q );
+                            sb.Append( ", " );
+                        }
+                        continue;
+                    }
 
                     if ( hexDump )
                     {
