@@ -14,7 +14,7 @@ class HexDump
 {
     static void Usage()
     {
-        Console.WriteLine( "Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-i] [-o:offset] [-n:bytes] [-c] file" );
+        Console.WriteLine( "Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-i] [-o:offset] [-n:bytes] [-c] [-w:offset ] file" );
         Console.WriteLine( "  Hex Dump" );
         Console.WriteLine( "  arguments: file  The file to display" );
         Console.WriteLine( "             -a    Specify d for decimal or x for hex display of address/offset. Default Hex" );
@@ -26,13 +26,15 @@ class HexDump
         Console.WriteLine( "             -i    Ignore other formatting and wrte a C++ initialized byte array" );
         Console.WriteLine( "             -n    Count of bytes to display (decimal or hex). 0 for whole file. Default is 0x100" );
         Console.WriteLine( "             -o    Starting Offset in bytes (decimal or hex). Default is 0" );
-        Console.WriteLine( "             -q    Ignore other formatting and wrte a C++ initialized quadword (8-byte) array" );
+        Console.WriteLine( "             -q    Ignore other formatting and write a C++ initialized quadword (8-byte) array" );
+        Console.WriteLine( "             -w    Ignore other formatting and write output in Apple 1 hex format at the address" );
         Console.WriteLine( "  defaults:  -a:x -f:bx -o:0 -n:0x100" );
         Console.WriteLine( "  examples:  hd in.txt" );
         Console.WriteLine( "             hd -a:d -f:qx -o:32 -n:64 -c in.dll       dumps the first 64 bytes" );
         Console.WriteLine( "             hd -f:dd -o:0x40 -n:0x200 -c foo.exe      dumps the first 0x200 bytes" );
         Console.WriteLine( "             hd -f:qx -o:0x40 -n -c foo.exe            dumps the whole file" );
         Console.WriteLine( "             hd -f:bd -o:0x40 -n:0 -c foo.exe          dumps the whole file" );
+        Console.WriteLine( "             hd foo.bin -w:0x1000                      dumps in Apple 1 format base address 0x1000" );
 
         Environment.Exit(1);
     } //Usage
@@ -162,6 +164,8 @@ class HexDump
         bool offsetFromEnd = false;
         bool cppArray = false;
         bool cppArrayQWord = false;
+        bool apple1 = false;
+        long apple1Offset = 0x1000;
 
         for ( int i = 0; i < args.Length; i++ )
         {
@@ -171,7 +175,7 @@ class HexDump
                 string arg = args[i];
                 char c = argUpper[1];
     
-                if ( 'A' != c && 'B' != c && 'C' != c && 'D' != c && 'E' != c && 'F' != c && 'I' != c && 'N' != c && 'O' != c && 'Q' != c )
+                if ( 'A' != c && 'B' != c && 'C' != c && 'D' != c && 'E' != c && 'F' != c && 'I' != c && 'N' != c && 'O' != c && 'Q' != c && 'W' != c )
                     Usage();
     
                 if ( 'A' == c )
@@ -256,6 +260,18 @@ class HexDump
                 }
                 else if ( 'Q' == c )
                     cppArrayQWord = true;
+                else if ( 'W' == c )
+                {
+                    if ( ( arg.Length <= 3 ) || ( ':' != arg[2] ) )
+                        Usage();
+
+                    displayedBytes = Int64.MaxValue;
+                    apple1 = true;
+                    if ( ( arg.Length >= 5 ) && ( '0' == argUpper[3] ) && ( 'X' == argUpper[4] ) )
+                        apple1Offset = Convert.ToInt64( arg.Substring( 3 ), 16 );
+                    else
+                        apple1Offset = Convert.ToInt64( arg.Substring( 3 ) );
+                }
             }
             else
             {
@@ -305,9 +321,7 @@ class HexDump
                 for ( int offset = 0; offset < displayedBytes; offset += 16 )
                 {
                     int len = ( ( offset + 16 ) > displayedBytes ) ? (int) ( displayedBytes - offset ) : 16;
-
                     buf.Read( fs, len );
-
                     long cap = Math.Min( offset + 16, displayedBytes );
 
                     if ( cppArray )
@@ -322,9 +336,28 @@ class HexDump
                         }
                         continue;
                     }
+                    else if ( apple1 )
+                    {
+                        for ( long o = offset; o < cap; o++ )
+                        {
+                            if ( ( 0 != o ) && 0 == ( o % 8 ) )
+                                sb.Append( "\r\n" );
+
+                            if ( 0 == ( o % 8 ) )
+                            {
+                                long addr = o + apple1Offset;
+                                AppendHexWord( sb, (ushort) addr );
+                                sb.Append( ":" );
+                            }
+
+                            sb.Append( " " );
+                            AppendHexByte( sb, buf.ReadByte() );
+                        }
+                        continue;
+                    }
                     else if ( cppArrayQWord )
                     {
-                        if ( ( 0 != offset ) && 0 == ( offset % 32 ) )
+                        if ( ( 0 != offset ) && 0 == ( offset % 64 ) )
                             sb.Append( "\n" );
 
                         ulong q = buf.ReadQWord();
