@@ -329,7 +329,7 @@ class HexDump
                         for ( long o = offset; o < cap; o++ )
                         {
                             if ( 0 == ( o % 16 ) )
-                                sb.Append( "\n" );
+                                sb.Append( "\r\n" );
                             sb.Append( "0x" );
                             AppendHexByte( sb, buf.ReadByte() );
                             sb.Append( ", " );
@@ -358,7 +358,7 @@ class HexDump
                     else if ( cppArrayQWord )
                     {
                         if ( ( 0 != offset ) && 0 == ( offset % 64 ) )
-                            sb.Append( "\n" );
+                            sb.Append( "\r\n" );
 
                         ulong q = buf.ReadQWord();
                         sb.Append( "0x" );
@@ -513,7 +513,7 @@ class HexDump
                         }
                     }
     
-                    sb.Append( '\n' );
+                    sb.Append( "\r\n" );
     
                     if ( sb.Length > ( sb.Capacity / 2 ) )
                     {
@@ -537,6 +537,8 @@ class HexDump
                     evDone.WaitOne();
                     outstandingWrite = false;
                 }
+
+                sb.Append( "\r\n" );
 
                 if ( sb.Length > 0 )
                 {
