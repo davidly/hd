@@ -5,7 +5,7 @@ To build, use your favorite version of .net:
 
     c:\windows\microsoft.net\framework64\v4.0.30319\csc.exe /debug+ /checked- /nologo /o+ /nowarn:0168 hd.cs
 
-Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-o:offset] [-n:bytes] [-c] file
+Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-i] [-o:offset] [-n:bytes] [-c] [-w:offset ] file
 
     Hex Dump
     arguments: file  The file to display
@@ -15,14 +15,18 @@ Usage: hd [-a:d|x] [-f:(b|w|d|q)(d|x)] [-o:offset] [-n:bytes] [-c] file
                -d    Ignore all other formatting args and write unformatted hex bytes
                -e    Indicates -o is from the End of the file, not the start
                -f    Format of data: width (Byte, Word, Dword, Qword) and radix (Decimal, heX). Default bx
+               -i    Ignore other formatting and wrte a C++ initialized byte array
                -n    Count of bytes to display (decimal or hex). 0 for whole file. Default is 0x100
                -o    Starting Offset in bytes (decimal or hex). Default is 0
+               -q    Ignore other formatting and write a C++ initialized quadword (8-byte) array
+               -w    Ignore other formatting and write output in Apple 1 hex format at the address
     defaults:  -a:x -f:bx -o:0 -n:0x100
     examples:  hd in.txt
                hd -a:d -f:qx -o:32 -n:64 -c in.dll       dumps the first 64 bytes
                hd -f:dd -o:0x40 -n:0x200 -c foo.exe      dumps the first 0x200 bytes
                hd -f:qx -o:0x40 -n -c foo.exe            dumps the whole file
                hd -f:bd -o:0x40 -n:0 -c foo.exe          dumps the whole file
+               hd foo.bin -w:0x1000                      dumps in Apple 1 format base address 0x1000
 
 The app is perhaps overly optimized, because sometimes you need to dump a massive file to look for patterns.
 
