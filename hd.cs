@@ -538,7 +538,8 @@ class HexDump
                     outstandingWrite = false;
                 }
 
-                sb.Append( "\r\n" );
+                if ( !hexDump )
+                    sb.Append( "\r\n" );
 
                 if ( sb.Length > 0 )
                 {
